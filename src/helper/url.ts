@@ -23,21 +23,19 @@ export function buildURL(url: string, params?: any): string {
       values = [val];
     }
 
-    const valueConvert = values
-      .map(val => {
-        if (isObject(val)) {
-          return `${encode(key)}=${encode(JSON.stringify(val))}`;
-        } else if (isDate(val)) {
-          return `${encode(key)}=${encode(val.toISOString())}`;
-        }
-        return `${encode(key)}=${encode(val)}`;
-      })
-      .filter(item => typeof item === 'string');
+    const valueConvert = values.map(val => {
+      if (isObject(val)) {
+        return `${encode(key)}=${encode(JSON.stringify(val))}`;
+      } else if (isDate(val)) {
+        return `${encode(key)}=${encode(val.toISOString())}`;
+      }
+      return `${encode(key)}=${encode(val)}`;
+    });
 
     param = [...param, ...valueConvert!];
   });
 
-  let serializeParams = param.join('&');
+  const serializeParams = param.join('&');
 
   if (serializeParams) {
     const markIndex = url.indexOf('#');
@@ -46,7 +44,7 @@ export function buildURL(url: string, params?: any): string {
       url = url.slice(0, markIndex);
     }
 
-    url += (~url.indexOf('?') ? '?' : '&') + serializeParams;
+    url += (~url.indexOf('?') ? '&' : '?') + serializeParams;
   }
 
   return url;
