@@ -34,7 +34,7 @@ export function buildURL(url: string, params?: any): string {
       })
       .filter(item => typeof item === 'string');
 
-    param = [...param, ...(valueConvert as Array<string>)];
+    param = [...param, ...valueConvert!];
   });
 
   let serializeParams = param.join('&');
