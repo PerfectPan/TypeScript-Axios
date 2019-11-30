@@ -1,4 +1,4 @@
-import { isDate, isObject, encode } from './util';
+import { isDate, isPlainObject, encode } from './util';
 
 export function buildURL(url: string, params?: any): string {
   if (!params) {
@@ -24,7 +24,7 @@ export function buildURL(url: string, params?: any): string {
     }
 
     const valueConvert = values.map(val => {
-      if (isObject(val)) {
+      if (isPlainObject(val)) {
         return `${encode(key)}=${encode(JSON.stringify(val))}`;
       } else if (isDate(val)) {
         return `${encode(key)}=${encode(val.toISOString())}`;
