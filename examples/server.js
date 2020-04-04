@@ -9,35 +9,6 @@ const app = express();
 const compiler = webpack(WebpackConfig);
 const router = express.Router();
 
-router.get('/simple/get', (req, res) => {
-  res.json({
-    msg: 'hello world'
-  });
-});
-
-router.get('/base/get', (req, res) => {
-  res.json(req.query);
-});
-
-router.post('/base/post', (req, res) => {
-  res.json(req.body);
-});
-
-router.post('/base/buffer', (req, res) => {
-  const msg = [];
-  req.on('data', chunk => {
-    if (chunk) {
-      msg.push(chunk);
-    }
-  });
-  req.on('end', () => {
-    const buf = Buffer.concat(msg);
-    res.json(buf.toJSON());
-  });
-});
-
-app.use(router);
-
 app.use(
   webpackDevMiddleware(compiler, {
     publicPath: '/__build__/',
@@ -54,6 +25,35 @@ app.use(express.static(__dirname));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(router);
+
+router.get('/simple/get', (req, res) => {
+  res.json({
+    msg: 'hello world'
+  });
+});
+
+router.get('/base/get', (req, res) => {
+  res.json(req.query);
+});
+
+router.post('/base/buffer', (req, res) => {
+  const msg = [];
+  req.on('data', chunk => {
+    if (chunk) {
+      msg.push(chunk);
+    }
+  });
+  req.on('end', () => {
+    const buf = Buffer.concat(msg);
+    res.json(buf.toJSON());
+  });
+});
+
+router.post('/base/post', (req, res) => {
+  res.json(req.body);
+});
 
 const port = process.env.PORT || 8000;
 module.exports = app.listen(port, () => {
