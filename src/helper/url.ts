@@ -15,7 +15,7 @@ export function buildURL(url: string, params?: any): string {
     }
 
     // unite as array-like for future process
-    let values = [];
+    let values: any[] = [];
     if (Array.isArray(val)) {
       values = val;
       key += '[]';
@@ -23,7 +23,7 @@ export function buildURL(url: string, params?: any): string {
       values = [val];
     }
 
-    const valueConvert = values.map(val => {
+    const valueConvert: string[] = values.map(val => {
       if (isPlainObject(val)) {
         return `${encode(key)}=${encode(JSON.stringify(val))}`;
       } else if (isDate(val)) {
@@ -35,10 +35,10 @@ export function buildURL(url: string, params?: any): string {
     param = [...param, ...valueConvert!];
   });
 
-  const serializeParams = param.join('&');
+  const serializeParams: string = param.join('&');
 
   if (serializeParams) {
-    const markIndex = url.indexOf('#');
+    const markIndex: number = url.indexOf('#');
 
     if (~markIndex) {
       url = url.slice(0, markIndex);
