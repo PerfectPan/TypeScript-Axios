@@ -28,6 +28,38 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(router);
 
+function registerExtendRouter() {
+  router.get('/extend/get', (req, res) => {
+    res.json({
+      msg: 'hello world'
+    });
+  });
+
+  router.options('/extend/options', (req, res) => {
+    res.end();
+  });
+
+  router.delete('/extend/delete', (req, res) => {
+    res.end();
+  });
+
+  router.head('/extend/head', (req, res) => {
+    res.end();
+  });
+
+  router.patch('/extend/patch', (req, res) => {
+    res.end();
+  });
+
+  router.post('/extend/post', (req, res) => {
+    res.json(req.body);
+  });
+
+  router.put('/extend/put', (req, res) => {
+    res.json(req.body);
+  });
+}
+
 router.get('/simple/get', (req, res) => {
   res.json({
     msg: 'hello world'
@@ -54,6 +86,27 @@ router.post('/base/buffer', (req, res) => {
 router.post('/base/post', (req, res) => {
   res.json(req.body);
 });
+
+router.get('/error/get', (req, res) => {
+  if (Math.random() > 0.5) {
+    res.json({
+      msg: `hello world`
+    });
+  } else {
+    res.status(500);
+    res.end();
+  }
+});
+
+router.get('/error/timeout', (req, res) => {
+  setTimeout(() => {
+    res.json({
+      msg: `hello world`
+    });
+  }, 3000);
+});
+
+registerExtendRouter();
 
 const port = process.env.PORT || 8000;
 module.exports = app.listen(port, () => {
