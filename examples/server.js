@@ -123,6 +123,10 @@ router.get('/interceptor/get', (req, res) => {
   res.end();
 });
 
+router.post('/config/post', (req, res) => {
+  res.json(req.body);
+});
+
 const port = process.env.PORT || 8000;
 module.exports = app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}, Ctrl+C to stop`);
