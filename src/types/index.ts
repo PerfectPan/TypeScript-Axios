@@ -22,6 +22,8 @@ export interface AxiosRequestConfig {
   params?: any;
   responseType?: XMLHttpRequestResponseType;
   timeout?: number;
+  transformRequest?: AxiosTransformer | AxiosTransformer[];
+  transformResponse?: AxiosTransformer | AxiosTransformer[];
 
   [propName: string]: any;
 }
@@ -87,4 +89,8 @@ export interface AxiosInterceptorManager<T> {
   use(resolved: ResolvedFn<T>, rejected?: RejetedFn): number;
 
   eject(id: number): void;
+}
+
+export interface AxiosTransformer {
+  (data: any, header?: any): any;
 }

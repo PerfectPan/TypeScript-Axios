@@ -5,7 +5,6 @@ import { createError } from '../helper/error';
 export default function xhr(config: AxiosRequestConfig): AxiosPromise {
   return new Promise((resolve, reject) => {
     const { url, data = null, method = 'get', headers, responseType, timeout } = config;
-
     const request = new XMLHttpRequest();
 
     if (responseType) {
