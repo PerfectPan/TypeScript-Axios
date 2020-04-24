@@ -24,6 +24,7 @@ export interface AxiosRequestConfig {
   timeout?: number;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
+  cancelToken?: CancleToken;
 
   [propName: string]: any;
 }
@@ -93,4 +94,52 @@ export interface AxiosInterceptorManager<T> {
 
 export interface AxiosTransformer {
   (data: any, header?: any): any;
+}
+
+export interface AxiosStatic extends AxiosInstance {
+  create(config?: AxiosRequestConfig): AxiosInstance;
+
+  CancelToken: CancelTokenStatic;
+  Cancel: CancelStatic;
+  /**
+   * 判断传来的错误是不是Cancel类，从而判断是不是请求发送取消
+   */
+  isCancel: (value: any) => boolean;
+}
+
+export interface CancleToken {
+  promise: Promise<Cancel>;
+  reason?: Cancel;
+
+  throwIfRequested(): void;
+}
+
+export interface Canceler {
+  (message?: string): void;
+}
+
+export interface CancelExecutor {
+  (cancel: Canceler): void;
+}
+
+export interface CancelTokenSource {
+  token: CancleToken;
+  /**
+   * 取消发送请求
+   */
+  cancel: Canceler;
+}
+
+export interface CancelTokenStatic {
+  new (executor: CancelExecutor): CancleToken;
+
+  source(): CancelTokenSource;
+}
+
+export interface Cancel {
+  message?: string;
+}
+
+export interface CancelStatic {
+  new (message?: string): Cancel;
 }

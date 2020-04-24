@@ -127,6 +127,22 @@ router.post('/config/post', (req, res) => {
   res.json(req.body);
 });
 
+function registerCancelRouter() {
+  router.get('/cancel/get', (req, res) => {
+    setTimeout(() => {
+      res.json('hello');
+    }, 1000);
+  });
+
+  router.get('/cancel/post', (req, res) => {
+    setTimeout(() => {
+      res.json(req.body);
+    }, 1000);
+  });
+}
+
+registerCancelRouter();
+
 const port = process.env.PORT || 8000;
 module.exports = app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}, Ctrl+C to stop`);

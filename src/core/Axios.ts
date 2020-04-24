@@ -39,30 +39,7 @@ export default class Axios {
       config = url;
     }
 
-    config = mergeConfig(this.defaults, config);
-
-    const chain: PromiseChain<any>[] = [
-      {
-        resolved: dispatchRequest,
-        rejected: undefined
-      }
-    ];
-
-    this.interceptors.request.forEach(interceptor => {
-      chain.unshift(interceptor);
-    });
-
-    this.interceptors.response.forEach(interceptor => {
-      chain.push(interceptor);
-    });
-
-    let promise = Promise.resolve(config);
-
-    while (chain.length) {
-      const { resolved, rejected } = chain.shift()!;
-      promise = promise.then(resolved, rejected);
-    }
-    return promise;
+    return this.func(config);
   }
 
   get(url: string, config?: AxiosRequestConfig): AxiosPromise {
@@ -94,7 +71,7 @@ export default class Axios {
   }
 
   _requestMethodWithoutData(method: Method, url: string, config: AxiosRequestConfig): AxiosPromise {
-    return dispatchRequest({ ...config, url, method });
+    return this.func({ ...config, url, method });
   }
 
   _requestMethodWithData(
@@ -103,6 +80,33 @@ export default class Axios {
     config: AxiosRequestConfig,
     data?: any
   ): AxiosPromise {
-    return dispatchRequest({ ...config, url, method, data });
+    return this.func({ ...config, url, method, data });
+  }
+
+  func(config: AxiosRequestConfig): AxiosPromise {
+    config = mergeConfig(this.defaults, config);
+
+    const chain: PromiseChain<any>[] = [
+      {
+        resolved: dispatchRequest,
+        rejected: undefined
+      }
+    ];
+
+    this.interceptors.request.forEach(interceptor => {
+      chain.unshift(interceptor);
+    });
+
+    this.interceptors.response.forEach(interceptor => {
+      chain.push(interceptor);
+    });
+
+    let promise = Promise.resolve(config);
+
+    while (chain.length) {
+      const { resolved, rejected } = chain.shift()!;
+      promise = promise.then(resolved, rejected);
+    }
+    return promise;
   }
 }
