@@ -1,55 +1,67 @@
-import { isDate, isPlainObject, encode } from './util';
+import { isDate, isPlainObject, encode, isURLSearchParams } from './util';
 
 interface URLOrigin {
   protocol: string;
   host: string;
 }
 
-export function buildURL(url: string, params?: any): string {
+export function buildURL(
+  url: string,
+  params?: any,
+  paramsSerializer?: (params: any) => string
+): string {
   if (!params) {
     return url;
   }
 
-  let param: string[] = [];
+  let serializedParams;
 
-  Object.keys(params).forEach(key => {
-    const val = params[key];
+  if (paramsSerializer) {
+    serializedParams = paramsSerializer(params);
+  } else if (isURLSearchParams(params)) {
+    serializedParams = params.toString();
+  } else {
+    let param: string[] = [];
 
-    if (val === null || typeof val === 'undefined') {
-      return;
-    }
+    Object.keys(params).forEach(key => {
+      const val = params[key];
 
-    // unite as array-like for future process
-    let values: any[] = [];
-    if (Array.isArray(val)) {
-      values = val;
-      key += '[]';
-    } else {
-      values = [val];
-    }
-
-    const valueConvert: string[] = values.map(val => {
-      if (isPlainObject(val)) {
-        return `${encode(key)}=${encode(JSON.stringify(val))}`;
-      } else if (isDate(val)) {
-        return `${encode(key)}=${encode(val.toISOString())}`;
+      if (val === null || typeof val === 'undefined') {
+        return;
       }
-      return `${encode(key)}=${encode(val)}`;
+
+      // unite as array-like for future process
+      let values: any[] = [];
+      if (Array.isArray(val)) {
+        values = val;
+        key += '[]';
+      } else {
+        values = [val];
+      }
+
+      const valueConvert: string[] = values.map(val => {
+        if (isPlainObject(val)) {
+          return `${encode(key)}=${encode(JSON.stringify(val))}`;
+        } else if (isDate(val)) {
+          return `${encode(key)}=${encode(val.toISOString())}`;
+        }
+        return `${encode(key)}=${encode(val)}`;
+      });
+
+      param = [...param, ...valueConvert!];
     });
 
-    param = [...param, ...valueConvert!];
-  });
+    serializedParams = param.join('&');
+  }
 
-  const serializeParams: string = param.join('&');
-
-  if (serializeParams) {
+  if (serializedParams) {
     const markIndex: number = url.indexOf('#');
 
     if (~markIndex) {
       url = url.slice(0, markIndex);
     }
 
-    url += (~url.indexOf('?') ? '&' : '?') + serializeParams;
+    url += (~url.indexOf('?') ? '&' : '?') + serializedParams;
   }
 
   return url;
