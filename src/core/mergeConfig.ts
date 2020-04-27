@@ -14,7 +14,7 @@ function fromVal2Strat(val1: any, val2: any): any {
   }
 }
 
-const stratKeysDeepMerge = ['headers'];
+const stratKeysDeepMerge = ['headers', 'auth'];
 const stratKeysFromVal2 = ['url', 'param', 'data'];
 
 stratKeysDeepMerge.forEach(key => {

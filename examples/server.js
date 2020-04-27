@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const WebpackConfig = require('./webpack.config');
+const atob = require('atob');
 
 const app = express();
 const compiler = webpack(WebpackConfig);
@@ -169,6 +170,19 @@ function registerMoreRouter() {
   router.post('/more/upload', (req, res) => {
     console.log(req.body, req.files);
     res.end('progress success!');
+  });
+
+  router.post('/more/post', (req, res) => {
+    const auth = req.headers.authorization;
+    const [type, credentials] = auth.split(' ');
+    console.log(atob(credentials));
+    const [username, password] = atob(credentials).split(':');
+    if (type === 'Basic' && username === 'PYM' && password === 'ZDL') {
+      res.json(req.body);
+    } else {
+      res.status(401);
+      res.end('UnAuthorization');
+    }
   });
 }
 
