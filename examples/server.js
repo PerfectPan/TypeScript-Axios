@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const webpack = require('webpack');
+const cookieParser = require('cookie-parser');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const WebpackConfig = require('./webpack.config');
@@ -8,6 +9,8 @@ const WebpackConfig = require('./webpack.config');
 const app = express();
 const compiler = webpack(WebpackConfig);
 const router = express.Router();
+
+require('./server2');
 
 app.use(
   webpackDevMiddleware(compiler, {
@@ -25,6 +28,7 @@ app.use(express.static(__dirname));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use(router);
 
@@ -142,6 +146,14 @@ function registerCancelRouter() {
 }
 
 registerCancelRouter();
+
+function registerMoreRouter() {
+  router.get('/more/get', (req, res) => {
+    res.json(req.cookies);
+  });
+}
+
+registerMoreRouter();
 
 const port = process.env.PORT || 8000;
 module.exports = app.listen(port, () => {
