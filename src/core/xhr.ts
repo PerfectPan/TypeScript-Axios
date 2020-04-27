@@ -3,6 +3,7 @@ import { parseHeaders } from '../helper/headers';
 import { createError } from '../helper/error';
 import { isURLSameOrigin } from '../helper/url';
 import cookie from '../helper/cookie';
+import { isFormData } from '../helper/util';
 
 export default function xhr(config: AxiosRequestConfig): AxiosPromise {
   return new Promise((resolve, reject) => {
@@ -16,80 +17,110 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
       cancelToken,
       withCredentials,
       xsrfCookieName,
-      xsrfHeaderName
+      xsrfHeaderName,
+      onDownloadProgress,
+      onUploadProgress
     } = config;
     const request = new XMLHttpRequest();
 
-    if (responseType) {
-      request.responseType = responseType;
-    }
-
-    if (timeout) {
-      request.timeout = timeout;
-    }
-
-    if (withCredentials) {
-      request.withCredentials = withCredentials;
-    }
-
     request.open(method.toUpperCase(), url!, true);
 
-    request.onreadystatechange = function handleLoad() {
-      if (request.readyState !== 4) {
-        return;
+    configureRequest();
+
+    addEvents();
+
+    processHeaders();
+
+    processCancel();
+
+    request.send(data);
+
+    function configureRequest(): void {
+      if (responseType) {
+        request.responseType = responseType;
       }
 
-      if (request.status === 0) {
-        return;
+      if (timeout) {
+        request.timeout = timeout;
       }
 
-      const responseHeaders = parseHeaders(request.getAllResponseHeaders());
-      const responseData =
-        responseType && responseType !== 'text' ? request.response : request.responseText;
-      const response: AxiosResponse = {
-        data: responseData,
-        status: request.status,
-        statusText: request.statusText,
-        headers: responseHeaders,
-        config,
-        request
-      };
-
-      handleResponse(response);
-    };
-
-    request.onerror = function handleError() {
-      reject(createError('Network Error', config, null, request));
-    };
-
-    request.ontimeout = function handleTimeout() {
-      reject(createError(`Timeout of ${timeout} ms exceeded`, config, 'ECONNABORTED', request));
-    };
-
-    // xsrf防御
-    if ((withCredentials || isURLSameOrigin(url!)) && xsrfCookieName) {
-      const xsrfValue = cookie.read(xsrfCookieName);
-      if (xsrfValue && xsrfHeaderName) {
-        headers[xsrfHeaderName] = xsrfValue;
+      if (withCredentials) {
+        request.withCredentials = withCredentials;
       }
     }
 
-    Object.keys(headers).forEach(name => {
-      if (data === null && name.toLowerCase() === 'content-type') {
-        delete headers[name];
-      } else {
-        request.setRequestHeader(name, headers[name]);
-      }
-    });
+    function addEvents(): void {
+      request.onerror = function handleError() {
+        reject(createError('Network Error', config, null, request));
+      };
 
-    if (cancelToken) {
-      cancelToken.promise.then(reason => {
-        request.abort();
-        reject(reason);
+      request.ontimeout = function handleTimeout() {
+        reject(createError(`Timeout of ${timeout} ms exceeded`, config, 'ECONNABORTED', request));
+      };
+
+      if (onDownloadProgress) {
+        request.onprogress = onDownloadProgress;
+      }
+
+      if (onUploadProgress) {
+        request.upload.onprogress = onUploadProgress;
+      }
+
+      request.onreadystatechange = function handleLoad() {
+        if (request.readyState !== 4) {
+          return;
+        }
+
+        if (request.status === 0) {
+          return;
+        }
+
+        const responseHeaders = parseHeaders(request.getAllResponseHeaders());
+        const responseData =
+          responseType && responseType !== 'text' ? request.response : request.responseText;
+        const response: AxiosResponse = {
+          data: responseData,
+          status: request.status,
+          statusText: request.statusText,
+          headers: responseHeaders,
+          config,
+          request
+        };
+
+        handleResponse(response);
+      };
+    }
+
+    function processHeaders(): void {
+      if (isFormData(data)) {
+        delete headers['Content-Type'];
+      }
+
+      // xsrf防御
+      if ((withCredentials || isURLSameOrigin(url!)) && xsrfCookieName) {
+        const xsrfValue = cookie.read(xsrfCookieName);
+        if (xsrfValue && xsrfHeaderName) {
+          headers[xsrfHeaderName] = xsrfValue;
+        }
+      }
+
+      Object.keys(headers).forEach(name => {
+        if (data === null && name.toLowerCase() === 'content-type') {
+          delete headers[name];
+        } else {
+          request.setRequestHeader(name, headers[name]);
+        }
       });
     }
 
-    request.send(data);
+    function processCancel(): void {
+      if (cancelToken) {
+        cancelToken.promise.then(reason => {
+          request.abort();
+          reject(reason);
+        });
+      }
+    }
 
     function handleResponse(response: AxiosResponse): void {
       if (response.status >= 200 && response.status < 300) {

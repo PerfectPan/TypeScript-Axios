@@ -8,6 +8,10 @@ export function isPlainObject(val: any): val is Object {
   return toString.call(val) === '[object Object]';
 }
 
+export function isFormData(val: any): val is FormData {
+  return typeof val !== 'undefined' && val instanceof FormData;
+}
+
 export function isObject(val: any): val is Object {
   return val !== null && typeof val === 'object';
 }

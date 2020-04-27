@@ -1,5 +1,7 @@
 const express = require('express');
+const path = require('path');
 const bodyParser = require('body-parser');
+const multipart = require('connect-multiparty');
 const webpack = require('webpack');
 const cookieParser = require('cookie-parser');
 const webpackDevMiddleware = require('webpack-dev-middleware');
@@ -35,6 +37,12 @@ app.use(
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use(
+  multipart({
+    uploadDir: path.resolve(__dirname, 'upload-file')
+  })
+);
 
 app.use(router);
 
@@ -156,6 +164,11 @@ registerCancelRouter();
 function registerMoreRouter() {
   router.get('/more/get', (req, res) => {
     res.json(req.cookies);
+  });
+
+  router.post('/more/upload', (req, res) => {
+    console.log(req.body, req.files);
+    res.end('progress success!');
   });
 }
 
