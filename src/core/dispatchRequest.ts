@@ -8,9 +8,17 @@ export default function dispatchRequest(config: AxiosRequestConfig): AxiosPromis
   processConfig(config);
   // 发送请求前检测cancelToken是否已经取消
   throwIfCancellationRequested(config);
-  return xhr(config).then(res => {
-    return transformResponseData(res);
-  });
+  return xhr(config).then(
+    res => {
+      return transformResponseData(res);
+    },
+    e => {
+      if (e && e.response) {
+        e.response = transformResponseData(e.response);
+      }
+      return Promise.reject(e);
+    }
+  );
 }
 
 function processConfig(config: AxiosRequestConfig): void {
