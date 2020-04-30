@@ -85,6 +85,7 @@ export default class Axios {
 
   func(config: AxiosRequestConfig): AxiosPromise {
     config = mergeConfig(this.defaults, config);
+    config.method = config.method!.toLowerCase() as Method;
 
     const chain: PromiseChain<any>[] = [
       {
@@ -107,7 +108,7 @@ export default class Axios {
       const { resolved, rejected } = chain.shift()!;
       promise = promise.then(resolved, rejected);
     }
-    return promise;
+    return promise as AxiosPromise;
   }
 
   getUri(config?: AxiosRequestConfig): string {
